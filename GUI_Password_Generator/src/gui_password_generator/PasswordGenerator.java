@@ -4,8 +4,16 @@
  */
 package gui_password_generator;
 
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+
+/**
+ *
+ * @author Ali Sultani
+ */ 
 
 public class PasswordGenerator {
 
@@ -19,30 +27,56 @@ public class PasswordGenerator {
         String numbers = "0123456789";
         String symbols = "!@#$%^&*()_+-=.<>";
 
-        //  Uses config passed to the class to only include sets user has allowed
-        String allowedChars = "";
+        // Uses config passed to the class to only include sets user has allowed
+        StringBuilder allowedChars = new StringBuilder();
+        List<Character> requiredChars = new ArrayList<>();
+
+        // Add required characters based on config to ensure each type is represented
         if (config.isIncludeLowerCase()) {
-            allowedChars += lowerCaseLetters;
+            allowedChars.append(lowerCaseLetters);
+            requiredChars.add(lowerCaseLetters.charAt(random.nextInt(lowerCaseLetters.length())));
         }
         if (config.isIncludeUpperCase()) {
-            allowedChars += upperCaseLetters;
+            allowedChars.append(upperCaseLetters);
+            requiredChars.add(upperCaseLetters.charAt(random.nextInt(upperCaseLetters.length())));
         }
         if (config.isIncludeNumbers()) {
-            allowedChars += numbers;
+            allowedChars.append(numbers);
+            requiredChars.add(numbers.charAt(random.nextInt(numbers.length())));
         }
         if (config.isIncludeSymbols()) {
-            allowedChars += symbols;
+            allowedChars.append(symbols);
+            requiredChars.add(symbols.charAt(random.nextInt(symbols.length())));
         }
 
-        // Generate the password based on the allowed characters
-        for (int i = 0; i < config.getPasswordLength(); i++) {
-            char nextChar = allowedChars.charAt(random.nextInt(allowedChars.length()));
-            if (password.indexOf(String.valueOf(nextChar)) != -1) {
-                i--;
-            } else {
-                password.append(nextChar);
-            }
+        // Ensure allowedChars is not empty before generating the password
+        if (allowedChars.length() == 0) {
+            throw new IllegalArgumentException("At least one character type must be selected.");
         }
-        return password.toString();
+
+        // Add required characters to ensure each type is represented
+        for (char requiredChar : requiredChars) {
+            password.append(requiredChar);
+        }
+
+        // Fill the remaining length with random characters from the allowed characters
+        while (password.length() < config.getPasswordLength()) {
+            char nextChar = allowedChars.charAt(random.nextInt(allowedChars.length()));
+            password.append(nextChar);
+        }
+
+        // Shuffle the password to ensure randomness
+        List<Character> passwordChars = password.chars()
+            .mapToObj(c -> (char) c)
+            .collect(Collectors.toList());
+        Collections.shuffle(passwordChars);
+
+        // Convert back to a string
+        StringBuilder finalPassword = new StringBuilder();
+        for (char c : passwordChars) {
+            finalPassword.append(c);
+        }
+
+        return finalPassword.toString();
     }
 }
