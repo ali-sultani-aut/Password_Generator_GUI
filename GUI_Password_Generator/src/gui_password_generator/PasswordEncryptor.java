@@ -6,7 +6,7 @@ package gui_password_generator;
 
 public class PasswordEncryptor {
 
-    private int shift; // The number of positions to shift each character
+    final private int shift; // The number of positions to shift each character
 
     public PasswordEncryptor(String secretKey) {
         this.shift = calculateShift(secretKey); // Shifts based on the secret key passed
